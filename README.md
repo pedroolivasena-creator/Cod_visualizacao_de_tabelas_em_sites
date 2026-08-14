@@ -1,4 +1,4 @@
-# Cod_visualizacao_de_tabelas_em_sites
+# Cod_visualizacao_em_JSON
 Documentação do código
 1. Importação das bibliotecas
 from pathlib import Path
