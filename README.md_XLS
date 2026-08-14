@@ -1,0 +1,166 @@
+*Cod_para_arquivos_XLS
+Documentação do código — Download da população do IBGE
+
+Esse código tem como objetivo baixar um arquivo .xls disponibilizado pelo IBGE, referente às estimativas de população de 2025, e armazená-lo na pasta raw do projeto.
+
+1. Importação das bibliotecas
+from pathlib import Path
+import requests
+
+São utilizadas duas bibliotecas:
+
+Path, da biblioteca pathlib: facilita a criação e manipulação de caminhos de arquivos e diretórios.
+requests: realiza a requisição HTTP para acessar e baixar o arquivo disponibilizado pelo IBGE.
+2. Definição da URL
+XLS_URL = "https://ftp.ibge.gov.br/Estimativas_de_Populacao/Estimativas_2025/POP2025_20260113.xls"
+
+A variável XLS_URL armazena o endereço do arquivo que será baixado.
+
+Nesse caso, trata-se de uma planilha do IBGE contendo dados relacionados às estimativas de população de 2025.
+
+3. Requisição do arquivo
+response = requests.get(XLS_URL, stream=True, timeout=5)
+
+O método requests.get() realiza uma requisição HTTP para obter o arquivo.
+
+Os parâmetros utilizados são:
+
+XLS_URL → endereço do arquivo.
+stream=True → permite receber o arquivo gradualmente, em partes, em vez de carregar todo o conteúdo de uma vez na memória.
+timeout=5 → estabelece um limite de 5 segundos para a requisição.
+
+O resultado da requisição é armazenado na variável response.
+
+4. Verificação da resposta
+response.raise_for_status()
+
+Esse comando verifica se a requisição foi realizada corretamente.
+
+Caso o servidor retorne um erro HTTP, como:
+
+404 → arquivo não encontrado;
+403 → acesso proibido;
+500 → erro no servidor;
+
+o programa interromperá a execução e apresentará uma exceção.
+
+Isso é útil porque evita tentar salvar um arquivo que não foi baixado corretamente.
+
+5. Definição da pasta de destino
+outdir = Path(r"C:\Users\Usuario\PycharmProjects\PythonProject\data\raw")
+
+Define o diretório onde o arquivo será armazenado.
+
+O prefixo r na string:
+
+r"C:\Users\Usuario\..."
+
+faz com que as barras invertidas do caminho do Windows sejam interpretadas corretamente.
+
+6. Criação da pasta
+outdir.mkdir(parents=True, exist_ok=True)
+
+Garante que o diretório de destino exista.
+
+Os parâmetros significam:
+
+parents=True → cria também diretórios intermediários, caso sejam necessários.
+exist_ok=True → não gera erro caso a pasta já exista.
+7. Definição do nome do arquivo
+XLS_PATH = outdir / "pop_ibge_2025.XLS"
+
+Cria o caminho completo do arquivo que será salvo.
+
+O arquivo terá o nome:
+
+pop_ibge_2025.XLS
+
+e ficará dentro da pasta:
+
+data\raw
+
+A utilização da extensão .XLS indica que o arquivo está no formato de planilha do Excel.
+
+8. Abertura do arquivo
+with open(XLS_PATH, "wb") as f:
+
+O arquivo é aberto no modo:
+
+wb
+
+que significa write binary, ou seja, escrita em formato binário.
+
+Esse modo é necessário porque o arquivo .xls é um arquivo binário e não deve ser tratado como texto.
+
+O with garante que o arquivo seja fechado corretamente depois que o download terminar.
+
+9. Download em partes
+for chunk in response.iter_content(chunk_size=1024):
+    if chunk: f.write(chunk)
+
+Essa parte realiza o download efetivamente.
+
+O método:
+
+response.iter_content(chunk_size=1024)
+
+divide o arquivo em pequenos blocos de 1.024 bytes (1 KB).
+
+Cada bloco é armazenado temporariamente na variável chunk.
+
+Depois:
+
+f.write(chunk)
+
+grava o bloco no arquivo.
+
+Esse procedimento é interessante para arquivos maiores porque evita carregar todo o arquivo na memória de uma única vez.
+
+A condição:
+
+if chunk:
+
+garante que somente blocos que realmente contenham dados sejam gravados.
+
+10. Mensagem final
+print("Arquivo CSV salvo em:", XLS_PATH)
+
+Exibe no console o local onde o arquivo foi salvo.
+
+Porém, existe um pequeno erro nessa mensagem: o arquivo não é CSV, e sim um arquivo XLS.
+
+O ideal seria:
+
+print("Arquivo XLS salvo em:", XLS_PATH)
+Fluxo do programa
+
+O funcionamento pode ser representado da seguinte forma:
+
+Servidor do IBGE
+↓
+Requisição HTTP com requests
+↓
+Verificação da resposta
+↓
+Criação da pasta data/raw
+↓
+Download do arquivo em blocos de 1 KB
+↓
+Gravação do arquivo .XLS
+↓
+pop_ibge_2025.XLS
+
+Objetivo do código
+
+O objetivo desse código é automatizar a obtenção de dados de estimativa populacional do IBGE e armazenar o arquivo original na pasta data/raw do projeto, mantendo os dados em seu formato original para que possam ser utilizados posteriormente em etapas de tratamento, integração ou análise de dados.
+
+Pequena correção recomendada
+
+Troque:
+
+print("Arquivo CSV salvo em:", XLS_PATH)
+
+por:
+
+print("Arquivo XLS salvo em:", XLS_PATH)
+porque o arquivo baixado possui formato XLS, não CSV.
